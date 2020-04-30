@@ -70,7 +70,7 @@ const NavigationStacks = createBottomTabNavigator(
   //En esta parte es que screen ="Pantalla"
   //se va iniciar la aplicacion
   {
-    initialRouteName: "Restaurants",
+    initialRouteName: "MyAccount",
     order: ["Restaurants", "TopLists", "SearchRestaurants", "MyAccount"],
     tabBarOptions: {
       inactiveTintColor: "#646464",
