@@ -6,18 +6,26 @@ import * as ImagePicker from "expo-image-picker";
 import * as Location from "expo-location";
 import MapView from "react-native-maps";
 import Modal from "../Modal";
-import "react-native-get-random-values";
-import { v4 as uuid } from "uuid";
 
 //para insertar datos a firebase
 import { firebaseApp } from "../../utils/FireBase";
 import firebase from "firebase/app";
 import "firebase/firestore";
-// const db = firebase.firestore(firebaseApp);
+const db = firebase.firestore(firebaseApp);
 
 const WidthScreen = Dimensions.get("window").width;
 
+// generador de id ramdom
+function uuidv4() {
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
+    var r = (Math.random() * 16) | 0,
+      v = c == "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 export default function AddRestaurantForm(props) {
+  console.ignoredYellowBox = ["Setting a timer"];
   const { toastRef, setIsLoading, navigation } = props;
   const [imagesSelected, setImagesSelected] = useState([]);
   const [restaurantName, setRestaurantName] = useState("");
@@ -28,35 +36,54 @@ export default function AddRestaurantForm(props) {
 
   const addRestaurant = () => {
     if (!restaurantName || !restaurantAddress || !restaurantDescription) {
-      toastRef.current.show(
-        "Todos los campos del formulario son obligatorios",
-        1000
-      );
+      toastRef.current.show("Todos los campos del formulario son obligatorios");
     } else if (imagesSelected.length === 0) {
-      toastRef.current.show("El restaurante debe tener almenos una foto", 1000);
+      toastRef.current.show("El restaurante debe tener almenos una foto");
     } else if (!locationRestaurant) {
-      toastRef.current.show(
-        "Tienes que localizar el restuarante en el mapa",
-        1000
-      );
+      toastRef.current.show("Tienes que localizar el restuarante en el mapa");
     } else {
-      // setIsLoading(true);
-      console.log("Todo correcto...");
-      uploadImagesStorage(imagesSelected);
+      setIsLoading(true);
+      uploadImagesStorage(imagesSelected).then((arrayImages) => {
+        db.collection("restaurants")
+          .add({
+            name: restaurantName,
+            address: restaurantAddress,
+            description: restaurantDescription,
+            location: locationRestaurant,
+            images: arrayImages,
+            riting: 0,
+            ratingTotal: 0,
+            quantityVoting: 0,
+            createAt: new Date(),
+            createBy: firebaseApp.auth().currentUser.uid,
+          })
+          .then(() => {
+            setIsLoading(false);
+            navigation.navigate("Restaurants");
+          })
+          .catch(() => {
+            setIsLoading(false);
+            toastRef.current.show(
+              "Error al subir el restaurante intentelo mas tarde"
+            );
+          });
+      });
     }
   };
   const uploadImagesStorage = async (imageArray) => {
-    const imageBlob = [];
+    const imagesBlob = [];
     await Promise.all(
       imageArray.map(async (image) => {
         const response = await fetch(image);
         const blob = await response.blob();
-        const ref = firebase.storage().ref("restaurant-images").child(uuid());
+        const ref = firebase.storage().ref("restaurant-images").child(uuidv4());
+
         await ref.put(blob).then((result) => {
-          console.log(result);
+          imagesBlob.push(result.metadata.name);
         });
       })
     );
+    return imagesBlob;
   };
 
   return (
