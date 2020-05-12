@@ -14,7 +14,6 @@ import "firebase/firestore";
 const db = firebase.firestore(firebaseApp);
 
 const WidthScreen = Dimensions.get("window").width;
-
 // generador de id ramdom
 function uuidv4() {
   return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function (c) {
@@ -23,10 +22,8 @@ function uuidv4() {
     return v.toString(16);
   });
 }
-
 export default function AddRestaurantForm(props) {
-  console.ignoredYellowBox = ["Setting a timer"];
-  const { toastRef, setIsLoading, navigation } = props;
+  const { toastRef, setIsLoading, navigation, setIsReloadRestaurants } = props;
   const [imagesSelected, setImagesSelected] = useState([]);
   const [restaurantName, setRestaurantName] = useState("");
   const [restaurantAddress, setRestaurantAddress] = useState("");
@@ -59,6 +56,7 @@ export default function AddRestaurantForm(props) {
           })
           .then(() => {
             setIsLoading(false);
+            setIsReloadRestaurants(true);
             navigation.navigate("Restaurants");
           })
           .catch(() => {
@@ -70,6 +68,7 @@ export default function AddRestaurantForm(props) {
       });
     }
   };
+
   const uploadImagesStorage = async (imageArray) => {
     const imagesBlob = [];
     await Promise.all(
