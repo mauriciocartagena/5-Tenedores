@@ -9,16 +9,19 @@ import {
 } from "react-native";
 import { Image } from "react-native-elements";
 import * as firebase from "firebase";
+import { NavigationEvents } from "react-navigation";
 // import Restaurants from "../../screens/Restaurants/Restaurants";
 
 export default function ListRestaurant(props) {
-  const { restaurants, isLoading, handleLoadMore } = props;
+  const { restaurants, isLoading, handleLoadMore, navigation } = props;
   return (
     <View>
       {restaurants ? (
         <FlatList
           data={restaurants}
-          renderItem={(restaurant) => <Restaurant restaurant={restaurant} />}
+          renderItem={(restaurant) => (
+            <Restaurant restaurant={restaurant} navigation={navigation} />
+          )}
           keyExtractor={(item, index) => index.toString()}
           onEndReached={handleLoadMore}
           onEndReachedThreshold={0}
@@ -52,10 +55,9 @@ function FooterList(props) {
   }
 }
 function Restaurant(props) {
-  const { restaurant } = props;
+  const { restaurant, navigation } = props;
   const { name, address, description, images } = restaurant.item.restaurant;
   const [imageRestaurant, setImageRestaurant] = useState(null);
-
   useEffect(() => {
     const image = images[0];
     firebase
@@ -69,7 +71,9 @@ function Restaurant(props) {
   });
 
   return (
-    <TouchableOpacity onPress={() => console.log("Ir al restaurante.")}>
+    <TouchableOpacity
+      onPress={() => navigation.navigate("Restaurant", { restaurant })}
+    >
       <View style={styles.viewRestaurant}>
         <View style={styles.viewRestaurantImage}>
           <Image
