@@ -12,6 +12,7 @@ export default function Restaurant(props) {
   const { navigation } = props;
   const { restaurant } = navigation.state.params.restaurant.item;
   const [imagesRestaurant, setImagesRestaurant] = useState([]);
+  const [rating, setRating] = useState(restaurant.riting);
 
   useEffect(() => {
     const arrayUrls = [];
@@ -41,7 +42,7 @@ export default function Restaurant(props) {
       <TittleRestaurant
         name={restaurant.name}
         description={restaurant.description}
-        rating={restaurant.riting}
+        rating={rating}
       ></TittleRestaurant>
       <RestaurantInfo
         location={restaurant.location}
@@ -51,6 +52,7 @@ export default function Restaurant(props) {
       <ListReviews
         navigation={navigation}
         idRestaurant={restaurant.id}
+        setRating={setRating}
       ></ListReviews>
     </ScrollView>
   );

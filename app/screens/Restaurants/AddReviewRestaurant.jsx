@@ -2,26 +2,33 @@ import React, { useState, useRef } from "react";
 import { StyleSheet, View } from "react-native";
 import { AirbnbRating, Button, Input } from "react-native-elements";
 import Toast from "react-native-easy-toast";
+import Loading from "../../components/Loading";
+
 import { firebaseApp } from "../../utils/FireBase";
-import firebase, { firestore } from "firebase/app";
+import firebase from "firebase/app";
 import "firebase/firestore";
 
 const db = firebase.firestore(firebaseApp);
 
 export default function AddReviewRestaurant(props) {
   const { navigation } = props;
-  const { idRestaurant } = navigation.state.params;
+  const { idRestaurant, setReviewsReload } = navigation.state.params;
   const [rating, setRating] = useState(null);
   const [title, setTitle] = useState("");
   const [review, setReview] = useState("");
+  const [isVisible, setIsVisible] = useState(false);
   const toasRef = useRef();
 
   const addReview = () => {
+    setIsVisible(true);
     if (rating === null) {
+      setIsVisible(false);
       toasRef.current.show("No has dado ninguna puntuacion");
     } else if (!title) {
+      setIsVisible(false);
       toasRef.current.show("El titulo es obligatorio");
     } else if (!review) {
+      setIsVisible(false);
       toasRef.current.show("El comentario es obligatorio");
     } else {
       //con esto sacamos el usuario que esta logeado
@@ -37,13 +44,40 @@ export default function AddReviewRestaurant(props) {
       };
       db.collection("reviews")
         .add(payload)
-        .then(() => console.log("Correcto"))
-        .catch(
-          toasRef.current.show("Error al enviar al review, intentelo mas tarde")
-        );
+        .then(() => {
+          updateRestaurant();
+        })
+        .catch(() => {
+          setIsVisible(false);
+          toasRef.current.show(
+            "Error al enviar al review, intentelo mas tarde"
+          );
+        });
     }
   };
 
+  const updateRestaurant = () => {
+    const restaurantRef = db.collection("restaurants").doc(idRestaurant);
+
+    restaurantRef.get().then((response) => {
+      const restaurantData = response.data();
+      const ratingTotal = restaurantData.ratingTotal + rating;
+      const quantityVoting = restaurantData.quantityVoting + 1;
+      const ratingResult = ratingTotal / quantityVoting;
+
+      restaurantRef
+        .update({
+          riting: ratingResult,
+          ratingTotal,
+          quantityVoting,
+        })
+        .then(() => {
+          setIsVisible(false);
+          setReviewsReload(true);
+          navigation.goBack();
+        });
+    });
+  };
   return (
     <View style={styles.viewBody}>
       <View style={styles.viewRating}>
@@ -74,6 +108,7 @@ export default function AddReviewRestaurant(props) {
           buttonStyle={styles.btn}
         ></Button>
         <Toast ref={toasRef} position="center"></Toast>
+        <Loading isVisible={isVisible} text="Enviando Comentario" />
       </View>
     </View>
   );
