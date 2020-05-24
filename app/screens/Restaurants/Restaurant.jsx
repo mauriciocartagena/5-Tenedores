@@ -15,12 +15,16 @@ const screenWidth = Dimensions.get("window").width;
 
 export default function Restaurant(props) {
   const { navigation } = props;
-  const { restaurant } = navigation.state.params.restaurant.item;
+  const { restaurant } = navigation.state.params;
   const [imagesRestaurant, setImagesRestaurant] = useState([]);
   const [rating, setRating] = useState(restaurant.riting);
   const [isFavorite, setIsFavorite] = useState(false);
+  const [userLogged, setUserLogged] = useState(false);
   const toastRef = useRef();
 
+  firebase.auth().onAuthStateChanged((user) => {
+    user ? setUserLogged(true) : setUserLogged(false);
+  });
   useEffect(() => {
     const arrayUrls = [];
     (async () => {
@@ -40,33 +44,41 @@ export default function Restaurant(props) {
   }, []);
 
   useEffect(() => {
-    db.collection("favorites")
-      .where("idRestaurant", "==", restaurant.id)
-      .where("idUser", "==", firebase.auth().currentUser.uid)
-      .get()
-      .then((response) => {
-        if (response.docs.length === 1) {
-          setIsFavorite(true);
-        }
-      });
+    if (userLogged) {
+      db.collection("favorites")
+        .where("idRestaurant", "==", restaurant.id)
+        .where("idUser", "==", firebase.auth().currentUser.uid)
+        .get()
+        .then((response) => {
+          if (response.docs.length === 1) {
+            setIsFavorite(true);
+          }
+        });
+    }
   }, []);
 
   const addFavorite = () => {
-    const payload = {
-      idUser: firebase.auth().currentUser.uid,
-      idRestaurant: restaurant.id,
-    };
-    db.collection("favorites")
-      .add(payload)
-      .then(() => {
-        setIsFavorite(true);
-        toastRef.current.show("Restaurante añadido a la lista de favoritos");
-      })
-      .catch(() => {
-        toastRef.current.show(
-          "Error al añadir el restaurante a la lista de favoritos, intentelo mas tarde"
-        );
-      });
+    if (!userLogged) {
+      toastRef.current.show(
+        "Para usar el sistema de favoritos tienes que estar logeado"
+      );
+    } else {
+      const payload = {
+        idUser: firebase.auth().currentUser.uid,
+        idRestaurant: restaurant.id,
+      };
+      db.collection("favorites")
+        .add(payload)
+        .then(() => {
+          setIsFavorite(true);
+          toastRef.current.show("Restaurante añadido a la lista de favoritos");
+        })
+        .catch(() => {
+          toastRef.current.show(
+            "Error al añadir el restaurante a la lista de favoritos, intentelo mas tarde"
+          );
+        });
+    }
   };
   const removeFavorite = () => {
     db.collection("favorites")
