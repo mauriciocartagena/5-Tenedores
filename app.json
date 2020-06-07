@@ -1,25 +1,41 @@
 {
   "expo": {
-    "name": "5-tenedores",
-    "slug": "5-tenedores",
-    "platforms": ["ios", "android", "web"],
+    "name": "5-tenedores-mauricio",
+    "slug": "5-tenedores-mauricio",
+    "platforms": [
+      "ios",
+      "android",
+      "web"
+    ],
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "splash": {
       "image": "./assets/splash.png",
       "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
+      "backgroundColor": "#00a680"
     },
     "updates": {
       "fallbackToCacheTimeout": 0
     },
-    "assetBundlePatterns": ["**/*"],
+    "assetBundlePatterns": [
+      "**/*"
+    ],
     "ios": {
       "supportsTablet": true
     },
     "android": {
-      "permissions": ["CAMERA_ROLL", "LOCATION"]
-    }
+      "package": "com.mauriciocartagena.cincotenedoresmauricio",
+      "permissions": [
+        "CAMERA_ROLL",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "ACCESS_FINE_LOCATION"
+      ]
+    },
+    "description": "",
+    "githubUrl": "https://github.com/mauriciocartagena/5-Tenedores"
   }
 }

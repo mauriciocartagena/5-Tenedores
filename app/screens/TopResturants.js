@@ -7,8 +7,8 @@ import Toast from "react-native-easy-toast";
 import ListTopRestaurants from "../components/Ranking/ListTopRestaurants";
 const db = firebase.firestore(firebaseApp);
 
-export default function TopRestaurants(prop) {
-  const { navigation } = prop;
+export default function TopRestaurants(props) {
+  const { navigation } = props;
   const [restaurants, setRestaurants] = useState([]);
   const toastRef = useRef();
 
